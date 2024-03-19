@@ -1,0 +1,4 @@
+---
+- name: 사용자 삭제
+  hosts: devservers
+  

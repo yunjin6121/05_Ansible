@@ -1,0 +1,61 @@
+---
+# Play 1 - web1 (ansible1.example.com)
+# 1) Package Installation - httpd, mod_ssl , firewalld
+# 2) Web Service Settings - /var/wwww/html/index.html
+# 3) Service StartUp - httpd, firewalld
+# 4) Firewall Registration - http , https
+# Play 2 - localhost (ansible.example.com)
+# 1) Web Check - curl http://web1.example.com
+
+# Play 1 - web1
+  - name: 웹 서버 설정과 확인
+    hosts: web1
+    tasks:
+  # 1) Package Installation - httpd, mod_ssl, firewalld
+      - name:
+        yum:
+          name:
+            - httpd
+            - mod_ssl
+            - firewalld
+          state: latest
+  # 2) Web Service Settings - /var/www/html/index.html
+      - name: "(2) Web Service Settings - /var/www/html/index.html"
+        copy:
+          content:
+            <html>
+            <h1><center>web1.example.com</center></h1>
+            </html>
+          dest: /var/www/html/index.html
+  # 3) Service StartUp - httpd, firewalld
+      - name: "(3) Service StartUp - httpd, firewalld"
+        service:
+          name: "{{ item }}"
+          state: started
+          enabled:  yes
+        loop:
+          - httpd
+          - firewalld
+  # 4) Firewall Registration - http , https
+      - name: "(4) Firewall Registration"
+        firewalld:
+          port: "{{ item }}"
+          permanent: yes
+          immediate: yes
+          state: enabled
+        loop:
+          - 80/tcp
+          - 443/tcp
+
+  # Play 2 - localhost
+  - name: Web Request
+    hosts: localhost
+    become: no
+    tasks:
+  # 1) Web Check - curl http://web1.example.com
+    - name: "(1) Web Check - curl http://web1.example.com"
+      uri:
+        url: http://web1 
+        return_content: true
+        status_code: 200
+      

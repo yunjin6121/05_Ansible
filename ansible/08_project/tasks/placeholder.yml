@@ -1,0 +1,7 @@
+---
+  - name: index.html 파일 만들기
+    copy:
+      content: |
+        hostname - "{{ ansible_facts['fqdn'] }}"
+        IP addr - "{{ ansible_default_ipv4.address }}"
+      dest: "{{ indexfile }}"

@@ -1,0 +1,12 @@
+---
+- name: myvhost 역할 테스트
+  hosts: webservers
+  pre_tasks:
+    - debug: msg="==== webserver role start ===="
+
+  roles:
+    - myvhost
+
+  post_tasks:
+    - debug: msg="==== webserver role stop===="
+  

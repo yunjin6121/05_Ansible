@@ -1,0 +1,15 @@
+---
+- name: 각 데이터 센터 시간 동기화
+  hosts: all
+  tasks:
+    - name: 타임존 설정
+      timezone:
+        name: "{{ host_timezone }}"
+      vars:
+      - host_timezone: "Asia/Seoul"
+
+    - name: chronyd 서비스 재기동
+      service:
+        name: chronyd
+        state: restarted
+  

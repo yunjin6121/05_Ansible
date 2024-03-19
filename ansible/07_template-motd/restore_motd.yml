@@ -1,0 +1,13 @@
+---
+- name: /etc/motd 파일 삭제
+  hosts:  all
+  tasks:
+  - name: /etc/motd 파일 삭제하기
+    file:
+      path: /etc/motd
+      state:  absent
+
+  - name: /etc/motd 빈 파일 생성하기
+    file:
+      path: /etc/motd
+      state: touch

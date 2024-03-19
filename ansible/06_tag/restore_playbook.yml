@@ -1,0 +1,44 @@
+---
+- name: DB 작업
+  hosts: all
+  gather_facts: yes
+  vars:
+    db_packages:
+      - mariadb-server
+      - python3-PyMySQL
+    db_config_url: http://192.168.10.10
+    db_config_src_path_small: "{{ db_config_url }}/my.cnf.small"
+    db_config_src_path_large: "{{ db_config_url }}/my.cnf.large"
+    db_config_path: /etc/my.cnf
+    db_service: mariadb
+  tasks:
+    - name: restart_db
+      service:
+        name: "{{ db_service }}"
+        state: stopped
+
+    - name: DB 작업 수행
+      include_tasks: prepare_db.yml
+      when: inventory_hostname in groups['databases']
+      # ansible db1 -m debug -a 'var=inventory_hostname'
+      # ansible db1 -m debug -a 'var=groups'
+      # ansible db1 -m debug -a 'var=groups["databases"]'
+
+    - name: Update motd for production
+      file:
+        path: /etc/motd
+        state: absent
+      tags:
+       - prod
+      
+    - name: Update motd for development
+      file:
+        path: /etc/motd
+
+      tags: 
+        - dev
+
+    - name: Remove the Configuration file
+      file:
+        path: "{{ db_config_path }}"
+        state:  absent

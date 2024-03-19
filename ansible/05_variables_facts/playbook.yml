@@ -1,0 +1,69 @@
+---
+# 웹 서버 기동하기
+- name: 웹 서버 기동하기
+  hosts: ansible1.example.com
+  gather_facts: yes
+  vars_files:
+  - vars/variables.yml
+  tasks:
+# 1) 웹패키지 설치(httpd, mod_ssl)
+  - name: 1) 웹 관련 패키지 설치
+    yum:
+      name:
+        - "{{ pkg_http }}"
+        - "{{ pkg_https }}"
+      state: latest
+  # 2) 웹 서버 설정
+  # * /etc/httpd/httpd.conf
+  - name: 2-1) /etc/httpd/httpd.conf 파일 작업
+    copy:
+      src:  "{{ conf_src_web }}"
+      dest: "{{ conf_dest_web }}"
+  # * /var/www/html/index.html
+  - name: 2-2) /var/www/html/index.html 파일 작업
+    copy:
+      # ansible1 192.168.10.11 has been customized by Ansible
+      # "{{ ansible_fqdn }}"
+      # "{{ ansible_facts['fqdn'] }}"
+      content: |
+        hostname: "{{ ansible_facts['hostname']}}"
+        ip addr: "{{ ansible_default_ipv4.address}}"
+      dest: "{{ index_dest_web }}"
+  #* /var/www/html/.htaccess
+  - name: 2-3) /var/www/html/.htaccess 파일 작업
+    copy:
+      src: "{{ htaccess_src }}"
+      dest: "{{ htaccess_dest }}"
+  # * /etc/httpd/secrets/htpasswd
+  - name: 2-4) /etc/httpd/secrets 디렉토리 생성
+    file:
+      path: "{{ secrets_dir }}"
+      state: directory
+      owner:  apache
+      group:  apache
+      mode: '0700'
+  - name: 2-5) /etc/httpd/secrets/htpasswd 파일 작업
+    copy:
+      src: "{{ secrets_src }}"
+      dest: "{{ secrets_dest }}"
+      owner: apache
+      group: apache
+      mode: '0400'
+  
+  # 3) 웹 서비스 기동
+  - name: 3) 웹 서비스 기동
+    service:
+      name: "{{ svc_web }}"
+      state: started
+      enabled: yes
+  # 4_ 방화벽 서비스 등록
+  - name: 4) 방화벽 서비스 등록
+    firewalld:
+      service: "{{ item }}"
+      permanent: yes
+      immediate: yes
+      state: enabled
+    loop:
+    - "{{ fw_http }}"
+    - "{{ fw_https }}"
+  # 5) 클라이언트에서 웹 요청

@@ -1,0 +1,25 @@
+---
+- name: Restore the playbooks.
+  # 1) mariadb service down
+  # 2) remote httpd/mariadb-server package
+  hosts: all
+  gather_facts: no
+  vars:
+    web_package: httpd
+    db_package: mariadb-server
+    db_service: mariadb
+  tasks:
+    - name: disable/stop the mariadb
+      service:
+        name: "{{ db_service }}"
+        enabled: no
+        state: stopped
+      ignore_errors: yes
+
+    - name: remove the packages
+      yum:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ web_package }}"
+        - "{{ db_package }}"

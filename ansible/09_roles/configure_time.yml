@@ -1,0 +1,21 @@
+---
+- name: 각 데이터 센터 시간 동기화
+  hosts: datacenters
+  vars:
+    timesyn_ntp_servers:
+    - hostname: time.bora.net
+      iburst: true
+  roles:
+    - rhel-system-roles.timesync
+
+  post_tasks:
+    - name: 타임존 설정
+      timezone:
+        name: "{{ host_timezone }}"
+      notify: restart chronyd
+
+  handlers:
+    - name: restart chronyd
+      service:
+        name: chronyd
+        state: restarted

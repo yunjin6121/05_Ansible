@@ -1,0 +1,12 @@
+---
+pkg_web:
+- httpd
+- mod_ssl
+
+svc_web:
+- httpd
+- firewalld
+
+fw_svc:
+- http
+- https
